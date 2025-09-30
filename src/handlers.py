@@ -5,6 +5,7 @@ from telegram.ext import (
     ContextTypes,
 )
 
+from ioc.services_container import ServicesContainer
 from proto.get_chat_members import get_all_participants
 
 
@@ -28,10 +29,8 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def handle_chance(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    message_text = update.message.text.strip()
 
-    parts = message_text.split(maxsplit=1)
-    tail = parts[1] if len(parts) > 1 else ""
+    command, tail = ServicesContainer.formatter_service().extract_command(update)
 
     if not tail:
         reply = "Неправильное использование - «шанс [текст]»"
@@ -70,10 +69,7 @@ async def handle_choose(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await update.message.reply_text(reply)
 
 async def handle_who(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    message_text = update.message.text.strip()
-
-    parts = message_text.split(maxsplit=1)
-    tail = parts[1] if len(parts) > 1 else ""
+    command, tail = ServicesContainer.formatter_service().extract_command(update)
 
     if not tail:
         reply = "Неправильное использование - кто [текст]»"
@@ -91,10 +87,7 @@ async def handle_who(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 
 
 async def handle_to_whom(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    message_text = update.message.text.strip()
-
-    parts = message_text.split(maxsplit=1)
-    tail = parts[1] if len(parts) > 1 else ""
+    command, tail = ServicesContainer.formatter_service().extract_command(update)
 
     if not tail:
         reply = "Неправильное использование - кому [текст]»"
@@ -112,9 +105,6 @@ async def handle_to_whom(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 
 async def handle_phobia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    message_text = update.message.text.strip()
-    parts = message_text.split(maxsplit=1)
-    target = parts[1] if len(parts) > 1 else update.effective_user.first_name
 
     fears = [
         "боится котов в шляпах",
@@ -167,10 +157,7 @@ async def handle_phobia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 
 async def handle_yang_thug(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    message_text = update.message.text.strip()
-
-    parts = message_text.split(maxsplit=1)
-    tail = parts[1] if len(parts) > 1 else ""
+    command, tail = ServicesContainer.formatter_service().extract_command(update)
 
     if not tail:
         reply = "Неправильное использование - янг тук»"
@@ -193,11 +180,8 @@ async def handle_yang_thug(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     )
 
 
-import random
-import json
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes, CallbackQueryHandler, CommandHandler
-
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import ContextTypes
 
 # --- События для квеста с диапазонами ---
 events = {

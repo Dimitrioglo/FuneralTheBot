@@ -2,15 +2,25 @@
 from telegram import Update
 from telegram.ext import (
     Application,
+    CallbackQueryHandler,
     CommandHandler,
     MessageHandler,
     filters,
 )
 
-from handlers import handle_chance, handle_choose, handle_phobia, handle_to_whom, handle_who, handle_yang_thug, help_command, start, start_quest, quest_button
+from handlers import (
+    handle_chance,
+    handle_choose,
+    handle_phobia,
+    handle_to_whom,
+    handle_who,
+    handle_yang_thug,
+    help_command,
+    quest_button,
+    start,
+    start_quest,
+)
 from ioc.application_container import ApplicationContainer
-from telegram.ext import ContextTypes, CallbackQueryHandler, CommandHandler
-
 
 
 def app() -> None:
@@ -35,9 +45,6 @@ def app() -> None:
     application.add_handler(CallbackQueryHandler(quest_button))                            
                 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
-
-
-
 
 
 if __name__ == "__main__":

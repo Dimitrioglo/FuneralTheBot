@@ -19,6 +19,8 @@ python-dotenv = "^1.1.1"
 telethon = "^1.41.2"
 async-lru = "^2.0.5"
 dependency-injector = "^4.48.2"
+uvicorn = "^0.37.0"
+starlette = "^0.48.0"
 
 
 [tool.poetry.group.dev.dependencies]
