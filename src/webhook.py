@@ -37,7 +37,8 @@ TOKEN = ApplicationContainer.envs().BOT_TOKEN()
 
 # Enable logging
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
 )
 logger = logging.getLogger(__name__)
 
@@ -51,17 +52,33 @@ async def main() -> None:
     # Handlers
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(MessageHandler(filters.Regex(r"(?i)^шанс"), handle_chance))
-    application.add_handler(MessageHandler(filters.Regex(r"(?i)^выбрать"), handle_choose))
-    application.add_handler(MessageHandler(filters.Regex(r"(?i)^кто"), handle_who))
-    application.add_handler(MessageHandler(filters.Regex(r"(?i)^кому"), handle_to_whom))
-    application.add_handler(MessageHandler(filters.Regex(r"(?i)^фобия"), handle_phobia))
-    application.add_handler(MessageHandler(filters.Regex(r"(?i)^янг тук"), handle_yang_thug))
-    application.add_handler(MessageHandler(filters.Regex(r"(?i)^квест"), start_quest))
+    application.add_handler(
+        MessageHandler(filters.Regex(r"(?i)^шанс"), handle_chance)
+    )
+    application.add_handler(
+        MessageHandler(filters.Regex(r"(?i)^выбрать"), handle_choose)
+    )
+    application.add_handler(
+        MessageHandler(filters.Regex(r"(?i)^кто"), handle_who)
+    )
+    application.add_handler(
+        MessageHandler(filters.Regex(r"(?i)^кому"), handle_to_whom)
+    )
+    application.add_handler(
+        MessageHandler(filters.Regex(r"(?i)^фобия"), handle_phobia)
+    )
+    application.add_handler(
+        MessageHandler(filters.Regex(r"(?i)^янг тук"), handle_yang_thug)
+    )
+    application.add_handler(
+        MessageHandler(filters.Regex(r"(?i)^квест"), start_quest)
+    )
     application.add_handler(CallbackQueryHandler(quest_button))
 
     # Set webhook with Telegram
-    await application.bot.set_webhook(url=f"{URL}/telegram", allowed_updates=Update.ALL_TYPES)
+    await application.bot.set_webhook(
+        url=f"{URL}/telegram", allowed_updates=Update.ALL_TYPES
+    )
 
     # Define Starlette routes
     async def telegram(request: Request) -> Response:

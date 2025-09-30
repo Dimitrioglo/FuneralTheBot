@@ -1,9 +1,9 @@
 
 format:
-	ruff check --fix
+	ruff format
 
 lint:
-	ruff check
+	ruff check --fix
 
 run:
 	poetry run python src/app.py

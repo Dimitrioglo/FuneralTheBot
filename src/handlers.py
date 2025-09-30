@@ -1,111 +1,60 @@
 import random
 
-from telegram import ForceReply, Update
+from telegram import Update
 from telegram.ext import (
     ContextTypes,
 )
 
+from exceptions.validation_error import ValidationError
 from ioc.services_container import ServicesContainer
 from proto.get_chat_members import get_all_participants
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send a message when the command /start is issued."""
-    user = update.effective_user
-    await update.message.reply_html(
-        rf"Hi {user.mention_html()}!",
-        reply_markup=ForceReply(selective=True),
+    await ServicesContainer.base_commands_service().start(update)
+
+
+async def handle_chance(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    _, tail = await ServicesContainer.formatter_service().extract_command(
+        update
+    )
+    await ServicesContainer.base_commands_service().chance(update, tail)
+
+
+async def handle_who(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    _, tail = await ServicesContainer.formatter_service().extract_command(
+        update
+    )
+    await ServicesContainer.base_commands_service().who(update, tail)
+
+
+async def handle_choose(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    _, tail = await ServicesContainer.formatter_service().extract_command(
+        update
+    )
+    await ServicesContainer.base_commands_service().choose(update, tail)
+
+
+async def handle_to_whom(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    command, tail = await ServicesContainer.formatter_service().extract_command(
+        update
     )
 
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send a message when the command /help is issued."""
-    await update.message.reply_text("Help!")
+    await ServicesContainer.base_commands_service().whom(update, tail)
 
 
-async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Echo the user message."""
-    await update.message.reply_text(update.message.text)
 
-
-async def handle_chance(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-
-    command, tail = ServicesContainer.formatter_service().extract_command(update)
-
-    if not tail:
-        reply = "Неправильное использование - «шанс [текст]»"
-        await update.message.reply_text(reply)
-        return
-
-    percent = random.randint(0, 100)
-
-    reply = f"Шанс «{tail}» – {percent}%"
-    await update.message.reply_text(reply)
-
-
-async def handle_choose(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    message_text = update.message.text.strip()
-
-    parts = message_text.split(maxsplit=1)
-    tail = parts[1] if len(parts) > 1 else ""
-
-    if not tail:
-        reply = "Неправильное использование – «Выбрать [вариант 1], [вариант 2], [вариант 3] ...»"
-        await update.message.reply_text(reply)
-        return
-
-    # Разбиваем строку по запятым
-    options = [opt.strip() for opt in tail.split(",") if opt.strip()]
-
-    if len(options) < 2:
-        reply = "Укажи хотя бы два варианта через запятую!"
-        await update.message.reply_text(reply)
-        return
-
-    # Выбираем случайный вариант
-    choice = random.choice(options)
-    reply = f"Я выбираю «{choice}»"
-
-    await update.message.reply_text(reply)
-
-async def handle_who(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    command, tail = ServicesContainer.formatter_service().extract_command(update)
-
-    if not tail:
-        reply = "Неправильное использование - кто [текст]»"
-        await update.message.reply_text(reply)
-        return
-
-    participants = await get_all_participants(update.effective_chat.id)
-    users_with_username = [u for u in participants if u["username"]]
-
-    if not users_with_username:
-        return None
-
-    random_user = random.choice(users_with_username)["username"]
-    await update.message.reply_text(f"@{random_user}, {tail}")
-
-
-async def handle_to_whom(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    command, tail = ServicesContainer.formatter_service().extract_command(update)
-
-    if not tail:
-        reply = "Неправильное использование - кому [текст]»"
-        await update.message.reply_text(reply)
-        return
-
-    participants = await get_all_participants(update.effective_chat.id)
-    users_with_username = [u for u in participants if u["username"]]
-
-    if not users_with_username:
-        return None
-
-    random_user = random.choice(users_with_username)["username"]
-    await update.message.reply_text(f"Пользователю @{random_user} {tail}")
-
-
-async def handle_phobia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-
+async def handle_phobia(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
     fears = [
         "боится котов в шляпах",
         "ужасается пустых холодильников",
@@ -143,7 +92,6 @@ async def handle_phobia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     chat_id = update.effective_chat.id
     participants = await get_all_participants(chat_id)
 
-
     random_user = random.choice(participants)
     fear = random.choice(fears)
 
@@ -156,8 +104,12 @@ async def handle_phobia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     )
 
 
-async def handle_yang_thug(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    command, tail = ServicesContainer.formatter_service().extract_command(update)
+async def handle_yang_thug(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    command, tail = await ServicesContainer.formatter_service().extract_command(
+        update
+    )
 
     if not tail:
         reply = "Неправильное использование - янг тук»"
@@ -167,7 +119,6 @@ async def handle_yang_thug(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     chat_id = update.effective_chat.id
     participants = await get_all_participants(chat_id)
     users_with_username = [u for u in participants if u["username"]]
-
 
     random_user = random.choice(users_with_username)
 
@@ -186,23 +137,66 @@ from telegram.ext import ContextTypes
 # --- События для квеста с диапазонами ---
 events = {
     "налево": [
-        {"description": "Вы встретили волка 🐺", "fail_range": (3, 6), "reward_range": (0, 2)},
-        {"description": "Нашли ягодную поляну 🍓", "fail_range": (0, 1), "reward_range": (1, 3)},
-        {"description": "Ничего интересного, просто лес 🌲", "fail_range": (2, 4), "reward_range": (0, 1)},
-        {"description": "Вы наткнулись на старый колодец 💧", "fail_range": (0, 1), "reward_range": (1, 4)},
-        {"description": "Сквозь деревья мелькнула тень 🦉", "fail_range": (3, 5), "reward_range": (0, 1)},
+        {
+            "description": "Вы встретили волка 🐺",
+            "fail_range": (3, 6),
+            "reward_range": (0, 2),
+        },
+        {
+            "description": "Нашли ягодную поляну 🍓",
+            "fail_range": (0, 1),
+            "reward_range": (1, 3),
+        },
+        {
+            "description": "Ничего интересного, просто лес 🌲",
+            "fail_range": (2, 4),
+            "reward_range": (0, 1),
+        },
+        {
+            "description": "Вы наткнулись на старый колодец 💧",
+            "fail_range": (0, 1),
+            "reward_range": (1, 4),
+        },
+        {
+            "description": "Сквозь деревья мелькнула тень 🦉",
+            "fail_range": (3, 5),
+            "reward_range": (0, 1),
+        },
     ],
     "направо": [
-        {"description": "Вы нашли старый сундук 💰", "fail_range": (0, 1), "reward_range": (2, 5)},
-        {"description": "Падение с кочки! 😱", "fail_range": (4, 7), "reward_range": (0, 1)},
-        {"description": "Маленький ручей, пора пить воду 💧", "fail_range": (1, 3), "reward_range": (0, 1)},
-        {"description": "Вы встретили странного странника 🧙", "fail_range": (0, 1), "reward_range": (1, 4)},
-        {"description": "Лесная тропинка пуста 🌿", "fail_range": (2, 5), "reward_range": (0, 1)},
-    ]
+        {
+            "description": "Вы нашли старый сундук 💰",
+            "fail_range": (0, 1),
+            "reward_range": (2, 5),
+        },
+        {
+            "description": "Падение с кочки! 😱",
+            "fail_range": (4, 7),
+            "reward_range": (0, 1),
+        },
+        {
+            "description": "Маленький ручей, пора пить воду 💧",
+            "fail_range": (1, 3),
+            "reward_range": (0, 1),
+        },
+        {
+            "description": "Вы встретили странного странника 🧙",
+            "fail_range": (0, 1),
+            "reward_range": (1, 4),
+        },
+        {
+            "description": "Лесная тропинка пуста 🌿",
+            "fail_range": (2, 5),
+            "reward_range": (0, 1),
+        },
+    ],
 }
 
+
 # --- Команда /квест ---
-async def start_quest(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def start_quest(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
     context.user_data["health"] = random.randint(8, 12)
     context.user_data["steps"] = 0  # количество пройденных шагов
     keyboard = [
@@ -215,11 +209,14 @@ async def start_quest(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="Ты стоишь на развилке таинственного леса 🌲. "
-             "Ветер шепчет о приключениях, а дорога полна неожиданностей. Куда ты пойдёшь? 👣",
-        reply_markup=reply_markup
+        "Ветер шепчет о приключениях, а дорога полна неожиданностей. Куда ты пойдёшь? 👣",
+        reply_markup=reply_markup,
     )
 
-async def quest_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+
+async def quest_button(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
     query = update.callback_query
     await query.answer()
 
@@ -233,7 +230,9 @@ async def quest_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     # Увеличиваем шаги
     context.user_data["steps"] = context.user_data.get("steps", 0) + 1
 
-    mention = f"[{query.from_user.first_name}](tg://user?id={query.from_user.id})"
+    mention = (
+        f"[{query.from_user.first_name}](tg://user?id={query.from_user.id})"
+    )
     text = f"{mention}, {event['description']}"
 
     # Рандомизация последствий
@@ -259,9 +258,7 @@ async def quest_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             pass
         # Отправляем финальное сообщение
         await context.bot.send_message(
-            chat_id=query.message.chat.id,
-            text=text,
-            parse_mode="Markdown"
+            chat_id=query.message.chat.id, text=text, parse_mode="Markdown"
         )
         return
 
@@ -276,14 +273,20 @@ async def quest_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     # Отправляем результат события
     await context.bot.send_message(
-        chat_id=query.message.chat.id,
-        text=text,
-        parse_mode="Markdown"
+        chat_id=query.message.chat.id, text=text, parse_mode="Markdown"
     )
 
     # Отправляем новую клавиатуру как новое сообщение
     await context.bot.send_message(
         chat_id=query.message.chat.id,
         text="Куда пойдёшь дальше?",
-        reply_markup=reply_markup
+        reply_markup=reply_markup,
     )
+
+
+async def global_error_handler(
+    update: object, context: ContextTypes.DEFAULT_TYPE
+):
+    if isinstance(context.error, ValidationError):
+        # Ignore: already handled in validator (message sent)
+        return
