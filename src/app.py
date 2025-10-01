@@ -1,7 +1,6 @@
 from telegram import Update
 from telegram.ext import (
     Application,
-    CallbackQueryHandler,
     CommandHandler,
     MessageHandler,
     filters,
@@ -11,13 +10,11 @@ from handlers import (
     global_error_handler,
     handle_chance,
     handle_choose,
-    handle_phobia,
+    handle_giphy,
     handle_to_whom,
     handle_who,
-    handle_yang_thug,
-    quest_button,
+    handle_help,
     start,
-    start_quest,
 )
 from ioc.application_container import ApplicationContainer
 
@@ -48,15 +45,11 @@ def app() -> None:
         MessageHandler(filters.Regex(r"(?i)^кому"), handle_to_whom)
     )
     application.add_handler(
-        MessageHandler(filters.Regex(r"(?i)^фобия"), handle_phobia)
+        MessageHandler(filters.Regex(r"(?i)^гиф"), handle_giphy)
     )
     application.add_handler(
-        MessageHandler(filters.Regex(r"(?i)^янг тук"), handle_yang_thug)
+        MessageHandler(filters.Regex(r"(?i)^помощь"), handle_help)
     )
-    application.add_handler(
-        MessageHandler(filters.Regex(r"(?i)^квест"), start_quest)
-    )
-    application.add_handler(CallbackQueryHandler(quest_button))
     application.add_error_handler(global_error_handler)
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)

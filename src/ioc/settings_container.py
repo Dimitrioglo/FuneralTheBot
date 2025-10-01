@@ -10,3 +10,4 @@ class SettingsContainer(containers.DeclarativeContainer):
     API_ID = providers.Object(os.getenv("API_ID", ""))
     API_HASH = providers.Object(os.getenv("API_HASH", ""))
     BOT_TOKEN = providers.Object(os.getenv("BOT_TOKEN", ""))
+    GIPHY_TOKEN = providers.Object(os.getenv("GIPHY_TOKEN", ""))

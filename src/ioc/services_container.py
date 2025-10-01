@@ -5,6 +5,7 @@ from services.base_commands_service import BaseCommandsService
 from services.formatter_service import FormatterService
 from services.participants_service import ParticipantsService
 from services.validator_service import ValidatorService
+from services.giphy_service import GiphyService
 
 
 class ServicesContainer(containers.DeclarativeContainer):
@@ -15,6 +16,9 @@ class ServicesContainer(containers.DeclarativeContainer):
         ApplicationContainer.envs().API_ID(),
         ApplicationContainer.envs().API_HASH(),
     )
+    giphy_service = providers.Singleton(
+        GiphyService, ApplicationContainer.envs().GIPHY_TOKEN()
+    )
     base_commands_service = providers.Singleton(
-        BaseCommandsService, participants_service
+        BaseCommandsService, participants_service, giphy_service
     )
